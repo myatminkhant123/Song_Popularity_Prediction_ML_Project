@@ -59,18 +59,5 @@ Python · Scikit-Learn · Pandas · NumPy · Matplotlib · Seaborn · PCA · KMe
 
 ---
 
-## 📄 Project Report
-Full report included in the repository: `ML_Project_finalized.docx`
-
----
-
-## 👥 Team Members
-- Naing Naing  
-- Khalid Waleed Ahmed Abdullah Ghaleb  
-- Myat Min Khant  
-- Mohamed Nawran Nasar Mohamed
-
----
-
 ## 🧾 License
 This project was developed as part of the **CCS2213 Machine Learning** course at **Albukhary International University (AIU)**.
