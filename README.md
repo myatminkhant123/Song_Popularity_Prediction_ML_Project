@@ -7,7 +7,10 @@
 
 An end-to-end Machine Learning pipeline and fully interactive web application that predicts whether a song has the mathematical characteristics of a Billboard Hot 100 hit. 
 
-Trained on an exhaustive dataset of **232,000+ Spotify tracks**, this application utilizes advanced tree-based ensemble methods (**XGBoost**, **Random Forest**) alongside unsupervised **KMeans Clustering** to profile audio feature performance. It natively integrates **SHAP (SHapley Additive exPlanations)** to provide mathematical "glass-box" game-theory explainability for every single model prediction.
+### 🌐 Live Demo
+**Play with the interactive Web App here:** [Song Popularity Predictor (Streamlit Cloud)](https://songpopularitypredictionmlproject.streamlit.app)
+
+Trained on an exhaustive dataset of **232,000+ Spotify tracks**, this application utilizes advanced tree-based ensemble methods (**XGBoost**) alongside unsupervised **KMeans Clustering** to profile audio feature performance. It natively integrates **SHAP (SHapley Additive exPlanations)** to provide mathematical "glass-box" game-theory explainability for every single model prediction.
 
 ---
 
