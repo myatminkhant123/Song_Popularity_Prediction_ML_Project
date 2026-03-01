@@ -1,0 +1,538 @@
+﻿Total cells: 56
+============================================================
+
+--- Cell 0 [code] ---
+import os
+os.environ['OMP_NUM_THREADS'] = '8'
+
+--- Cell 1 [code] ---
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
+
+--- Cell 2 [code] ---
+# Load Spotify dataset (Unsupervised)
+spotify_df = pd.read_csv("SpotifyFeatures.csv")
+
+# Load Billboard dataset (Supervised)
+hot100_df = pd.read_csv("Hot100.csv")
+
+
+--- Cell 3 [code] ---
+# Spotify Dataset
+print("Spotify Dataset Overview")
+print("Shape (rows, columns):", spotify_df.shape)
+print("\nColumn data types:")
+print(spotify_df.dtypes)
+print("\nNull values in each column:")
+print(spotify_df.isnull().sum())
+
+# Step 2: Automatically detect non-numeric (object or string) columns
+categorical_cols_spotify = spotify_df.select_dtypes(include='object').columns
+print("\n Possible Categorical Columns in Spotify:")
+print(list(categorical_cols_spotify))
+
+# Step 3: Check how many unique values in each of these
+print("\n Unique Values in These Columns:")
+print(spotify_df.nunique())
+
+--- Cell 4 [code] ---
+# Hot100 Dataset
+print("Hot100 Dataset Overview")
+print("Shape (rows, columns):", hot100_df.shape)
+print("\n Column data types:")
+print(hot100_df.dtypes)
+print("\n Null values in each column:")
+print(hot100_df.isnull().sum())
+
+# Step 2: Automatically detect non-numeric columns
+categorical_cols_hot100 = hot100_df.select_dtypes(include='object').columns
+print("\n Possible Categorical Columns in Hot100:")
+print(list(categorical_cols_hot100))
+
+# Step 3: Check unique values
+print("\n Unique Values in These Columns:")
+print(hot100_df.nunique())
+
+--- Cell 5 [code] ---
+# Drop row with missing track_name
+spotify_df = spotify_df.dropna(subset=['track_name'])
+
+--- Cell 6 [code] ---
+hot100_df['Popularity'].describe()
+
+--- Cell 7 [code] ---
+# Step 2: Define features (include all potentially useful numeric ones)
+feature_columns = [
+    'Danceability', 'Energy', 'Speechiness', 'Acousticness',
+    'Instrumentalness', 'Liveness', 'Valence', 'Tempo',
+    'Loudness', 'Year', 'Duration', 'Mode', 'Key', 'Time_Signature'
+]
+
+# Step 3: Extract X and y
+X = hot100_df[feature_columns]
+
+# Convert 'Popularity' into binary classes (1 = high popularity)
+popularity_median = hot100_df['Popularity'].median()
+y = (hot100_df['Popularity'] >= popularity_median).astype(int)
+
+# Step 4: Scale the features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Step 5: Train-test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X_scaled, y, test_size=0.2, random_state=42
+)
+
+# Step 6: Fit Random Forest model
+rf_model = RandomForestClassifier(random_state=42)
+rf_model.fit(X_train, y_train)
+
+# Step 7: Get feature importance
+importances = pd.Series(rf_model.feature_importances_, index=feature_columns)
+importances_sorted = importances.sort_values(ascending=True)
+...[truncated]...
+
+--- Cell 8 [code] ---
+hot100_selected_features = [
+    'Danceability', 'Energy', 'Speechiness', 'Acousticness',
+    'Instrumentalness', 'Liveness', 'Valence', 'Tempo',
+    'Loudness', 'Year', 'Duration', 'Key'  
+]
+
+
+--- Cell 9 [code] ---
+X_hot100 = hot100_df[hot100_selected_features]
+y = (hot100_df['Popularity'] >= hot100_df['Popularity'].median()).astype(int)
+
+
+--- Cell 10 [code] ---
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+
+--- Cell 11 [code] ---
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X_scaled, y, test_size=0.2, random_state=42
+)
+
+
+--- Cell 12 [code] ---
+spotify_selected_features = [
+    'acousticness', 'danceability', 'energy', 'instrumentalness',
+    'liveness', 'loudness', 'speechiness', 'tempo', 'valence'
+]
+
+X_spotify = spotify_df[spotify_selected_features]
+
+
+--- Cell 13 [code] ---
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_spotify_scaled = scaler.fit_transform(X_spotify)
+
+
+--- Cell 14 [markdown] ---
+Unsupervised
+
+--- Cell 15 [markdown] ---
+3.1 Clustering Methodology
+
+--- Cell 16 [code] ---
+# Import required libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+
+
+--- Cell 17 [markdown] ---
+3.3 Model Evaluation
+
+--- Cell 18 [markdown] ---
+#Elbow Method
+
+--- Cell 19 [code] ---
+sse = []
+K_range = range(1, 11)
+
+for k in K_range:
+    kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+    kmeans.fit(X_spotify_scaled)
+    sse.append(kmeans.inertia_)
+
+plt.figure(figsize=(8, 5))
+plt.plot(K_range, sse, marker='o')
+plt.xlabel('Number of Clusters (K)')
+plt.ylabel('SSE (Inertia)')
+plt.title('Elbow Method for Optimal K')
+plt.grid(True)
+plt.show()
+
+
+--- Cell 20 [markdown] ---
+#Silhouette Score
+
+--- Cell 21 [code] ---
+import random
+
+sample_indices = random.sample(range(len(X_spotify_scaled)), 2000)
+df_sample = X_spotify_scaled[sample_indices]
+
+for k in range(2, 6):
+    kmeans = KMeans(n_clusters=k, random_state=42 , n_init=10)
+    preds = kmeans.fit_predict(df_sample)
+    score = silhouette_score(df_sample, preds)
+    print(f'Silhouette Score for k={k}: {score:.4f}')
+
+
+--- Cell 22 [markdown] ---
+3.4 Final KMeans Clustering (K=3)
+
+--- Cell 23 [code] ---
+kmeans_final = KMeans(n_clusters=3, random_state=42 , n_init=10)
+cluster_labels = kmeans_final.fit_predict(X_spotify_scaled)
+
+
+--- Cell 24 [markdown] ---
+3.5 PCA for 2D Visualization
+
+--- Cell 25 [code] ---
+pca = PCA(n_components=2)
+pca_data = pca.fit_transform(X_spotify_scaled)
+
+# Create PCA DataFrame
+pca_df = pd.DataFrame(pca_data, columns=['PC1', 'PC2'])
+pca_df['Cluster'] = cluster_labels
+
+
+--- Cell 26 [markdown] ---
+3.6 Visualization
+
+--- Cell 27 [code] ---
+plt.figure(figsize=(8, 6))
+sns.scatterplot(data=pca_df, x='PC1', y='PC2', hue='Cluster', palette='Set2', s=60)
+plt.title('PCA Scatter Plot with KMeans Clusters')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.legend(title='Cluster')
+plt.grid(True)
+plt.show()
+
+
+--- Cell 28 [markdown] ---
+3.7 Cluster Interpretation
+
+--- Cell 29 [code] ---
+# Add cluster labels to numeric data
+spotify_df['Cluster'] = cluster_labels
+
+# Group by clusters and get average values
+cluster_summary = spotify_df.groupby('Cluster')[spotify_selected_features].mean()
+cluster_summary
+
+
+--- Cell 30 [markdown] ---
+3.8 Feature Importance (Random Forest)
+
+--- Cell 31 [code] ---
+from sklearn.ensemble import RandomForestClassifier
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Define X and y
+X = spotify_df[spotify_selected_features]              # 9 numeric audio features
+y = spotify_df['Cluster'].astype(int)                  # Ensure cluster labels are integer (not object or float)
+
+# Train Random Forest
+rf = RandomForestClassifier(random_state=42)
+rf.fit(X, y)
+
+# Get feature importances
+importances = pd.Series(rf.feature_importances_, index=X.columns)
+importances_sorted = importances.sort_values(ascending=False)
+
+# Plot feature importances
+plt.figure(figsize=(10, 5))
+importances_sorted.plot(kind='bar', color='skyblue')
+plt.title(" * Feature Importance for Explaining Cluster Labels (Spotify)")
+plt.xlabel("Features")
+plt.ylabel("Importance Score")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.show()
+
+
+--- Cell 32 [markdown] ---
+3.9 SHAP analysis
+
+--- Cell 33 [code] ---
+
+!pip install shap
+
+--- Cell 34 [code] ---
+import shap
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
+
+# For demonstration,create a simple synthetic dataset
+from sklearn.datasets import make_regression
+X, y = make_regression(n_samples=100, n_features=10, random_state=42)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train the Random Forest model
+rf = RandomForestRegressor(random_state=42)
+rf.fit(X_train, y_train)
+
+# Now create the SHAP explainer with the trained model
+explainer = shap.TreeExplainer(rf)
+shap_values = explainer.shap_values(X)  # Using the entire dataset for SHAP values
+
+# Create the summary plot
+shap.summary_plot(shap_values, X, plot_type="bar")
+
+
+--- Cell 35 [markdown] ---
+supervised
+
+--- Cell 36 [markdown] ---
+logistic regression 
+
+--- Cell 37 [code] ---
+# Import required library
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
+# Select features and target
+features = [
+    'Danceability', 'Energy', 'Speechiness', 'Acousticness',
+    'Instrumentalness', 'Liveness', 'Valence', 'Tempo',
+    'Loudness', 'Year', 'Duration', 'Key'
+]
+
+X = hot100_df[features]
+y = (hot100_df['Popularity'] >= hot100_df['Popularity'].median()).astype(int)
+
+# Standardize the features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Train Logistic Regression model
+log_model = LogisticRegression(max_iter=1000)
+log_model.fit(X_train, y_train)
+
+# Predict on test set
+y_pred_log = log_model.predict(X_test)
+y_proba_log = log_model.predict_proba(X_test)[:, 1]
+
+
+--- Cell 38 [code] ---
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+
+# Evaluate Logistic Regression
+print("≡ƒôè Logistic Regression Performance:")
+print("Accuracy :", accuracy_score(y_test, y_pred_log))
+print("Precision:", precision_score(y_test, y_pred_log))
+print("Recall   :", recall_score(y_test, y_pred_log))
+print("F1 Score :", f1_score(y_test, y_pred_log))
+print("ROC-AUC  :", roc_auc_score(y_test, y_proba_log))
+
+
+--- Cell 39 [markdown] ---
+decision tree 
+
+--- Cell 40 [code] ---
+# Import the model
+from sklearn.tree import DecisionTreeClassifier
+
+# Create and train the Decision Tree model
+dt_model = DecisionTreeClassifier()
+dt_model.fit(X_train, y_train)
+
+# Predict on test set
+y_pred_dt = dt_model.predict(X_test)
+y_proba_dt = dt_model.predict_proba(X_test)[:, 1]
+
+
+--- Cell 41 [code] ---
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+
+# Evaluate Decision Tree
+print("≡ƒôè Decision Tree Performance:")
+print("Accuracy :", accuracy_score(y_test, y_pred_dt))
+print("Precision:", precision_score(y_test, y_pred_dt))
+print("Recall   :", recall_score(y_test, y_pred_dt))
+print("F1 Score :", f1_score(y_test, y_pred_dt))
+print("ROC-AUC  :", roc_auc_score(y_test, y_proba_dt))
+
+
+--- Cell 42 [markdown] ---
+Random Forest 
+
+--- Cell 43 [code] ---
+# Import the model
+from sklearn.ensemble import RandomForestClassifier
+
+# Create and train the Random Forest model
+rf_model = RandomForestClassifier()
+rf_model.fit(X_train, y_train)
+
+# Predict on test set
+y_pred_rf = rf_model.predict(X_test)
+y_proba_rf = rf_model.predict_proba(X_test)[:, 1]
+
+
+--- Cell 44 [code] ---
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+
+# Evaluate Random Forest
+print("≡ƒôè Random Forest Performance:")
+print("Accuracy :", accuracy_score(y_test, y_pred_rf))
+print("Precision:", precision_score(y_test, y_pred_rf))
+print("Recall   :", recall_score(y_test, y_pred_rf))
+print("F1 Score :", f1_score(y_test, y_pred_rf))
+print("ROC-AUC  :", roc_auc_score(y_test, y_proba_rf))
+
+
+--- Cell 45 [markdown] ---
+support Vector Machine ( SVM )  
+
+--- Cell 46 [code] ---
+# Import the model
+from sklearn.svm import SVC
+
+# Create and train the SVM model (with probability=True for ROC-AUC)
+svm_model = SVC(probability=True)
+svm_model.fit(X_train, y_train)
+
+# Predict on test set
+y_pred_svm = svm_model.predict(X_test)
+y_proba_svm = svm_model.predict_proba(X_test)[:, 1]
+
+
+--- Cell 47 [code] ---
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+
+# Evaluate SVM
+print("≡ƒôè Support Vector Machine (SVM) Performance:")
+print("Accuracy :", accuracy_score(y_test, y_pred_svm))
+print("Precision:", precision_score(y_test, y_pred_svm))
+print("Recall   :", recall_score(y_test, y_pred_svm))
+print("F1 Score :", f1_score(y_test, y_pred_svm))
+print("ROC-AUC  :", roc_auc_score(y_test, y_proba_svm))
+
+
+--- Cell 48 [markdown] ---
+Model Performance Metrics comparesion 
+
+--- Cell 49 [code] ---
+import pandas as pd
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+
+# Build the comparison table
+comparison_results = {
+    "Model": ["Logistic Regression", "Decision Tree", "Random Forest", "SVM"],
+    "Accuracy": [
+        accuracy_score(y_test, y_pred_log),
+        accuracy_score(y_test, y_pred_dt),
+        accuracy_score(y_test, y_pred_rf),
+        accuracy_score(y_test, y_pred_svm)
+    ],
+    "Precision": [
+        precision_score(y_test, y_pred_log),
+        precision_score(y_test, y_pred_dt),
+        precision_score(y_test, y_pred_rf),
+        precision_score(y_test, y_pred_svm)
+    ],
+    "Recall": [
+        recall_score(y_test, y_pred_log),
+        recall_score(y_test, y_pred_dt),
+        recall_score(y_test, y_pred_rf),
+        recall_score(y_test, y_pred_svm)
+    ],
+    "F1 Score": [
+        f1_score(y_test, y_pred_log),
+        f1_score(y_test, y_pred_dt),
+        f1_score(y_test, y_pred_rf),
+        f1_score(y_test, y_pred_svm)
+    ],
+...[truncated]...
+
+--- Cell 50 [markdown] ---
+4.4 Visualizations`
+Include a bar chart of model performance.
+
+--- Cell 51 [code] ---
+import matplotlib.pyplot as plt
+
+# Extract F1 Scores from the results_df you already built
+f1_scores = results_df["F1 Score"]
+models = results_df["Model"]
+
+# Create bar chart
+plt.figure(figsize=(8, 5))
+plt.bar(models, f1_scores, color='purple')
+plt.title("Model Comparison: F1 Score")
+plt.ylabel("F1 Score")
+plt.xlabel("Model")
+plt.ylim(0, 1)
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.tight_layout()
+plt.show()
+
+
+--- Cell 52 [markdown] ---
+5.3 Feature Importance Bar Chart (Random Forest)
+
+--- Cell 53 [code] ---
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Get feature importances from the trained Random Forest model
+importances = rf_model.feature_importances_
+feature_names = [
+    'Danceability', 'Energy', 'Speechiness', 'Acousticness',
+    'Instrumentalness', 'Liveness', 'Valence', 'Tempo',
+    'Loudness', 'Year', 'Duration', 'Key'
+]
+
+# Create Series and sort
+importance_series = pd.Series(importances, index=feature_names).sort_values(ascending=True)
+
+# Plot
+plt.figure(figsize=(10, 6))
+importance_series.plot(kind='barh', color='skyblue')
+plt.title("Feature Importance (Random Forest Classifier)")
+plt.xlabel("Importance Score")
+plt.ylabel("Feature")
+plt.grid(axis='x', linestyle='--', alpha=0.7)
+plt.tight_layout()
+plt.show()
+
+
+--- Cell 54 [code] ---
+
+
+--- Cell 55 [code] ---
+

@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+.env/
+
+# IDE files
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Large datasets or files (Optional, assuming you want to push your .pkl files, make sure none exceed 100MB)
+# Note: SpotifyFeatures.csv is 33MB, which is fine for GitHub.
+# Hot100.csv is ~1MB, fine.
+# Models under 100MB are fine.
+
+# Ignore raw data if it becomes too large later
+# *.csv

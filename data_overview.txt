@@ -1,0 +1,21 @@
+﻿c:/Users/mmk11/Desktop/song/.venv/Sc
+ripts/python.exe : Traceback (most 
+recent call last):
+At line:1 char:1
++ c:/Users/mmk11/Desktop/song/.venv/
+Scripts/python.exe explore_nb.py 2> 
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSp 
+   ecified: (Traceback (most recen  
+  t call last)::String) [], Remot   
+ eException
+    + FullyQualifiedErrorId : Nativ 
+   eCommandError
+ 
+  File "C:\Users\mmk11\Desktop\song\
+explore_nb.py", line 1, in <module>
+    import pandas as pd
+ModuleNotFoundError: No module 
+named 'pandas'
